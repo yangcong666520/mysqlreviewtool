@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据库题库刷题</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: #1a1a2e;
+  min-height: 100vh;
+  color: #e0e0e0;
+}
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+h1 {
+  text-align: center;
+  font-size: 24px;
+  color: #64B5F6;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: 2px solid #4A90D9;
+  background: #16213e;
+  color: #64B5F6;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.tab-btn:hover { background: #1a2744; }
+.tab-btn.active {
+  background: #4A90D9;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(74,144,217,0.4);
+}
+.stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: #16213e;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  font-size: 14px;
+  color: #aaa;
+}
+.stats-bar .correct-rate { color: #64B5F6; font-weight: 600; }
+.card {
+  background: #16213e;
+  border-radius: 14px;
+  padding: 28px 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+  animation: fadeIn 0.35s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes feedbackIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.q-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.q-num {
+  font-size: 13px;
+  color: #aaa;
+  background: #0f3460;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.q-type {
+  font-size: 13px;
+  color: #64B5F6;
+  font-weight: 500;
+}
+.q-text {
+  font-size: 17px;
+  line-height: 1.7;
+  margin-bottom: 22px;
+  color: #e0e0e0;
+}
+.options { list-style: none; }
+.options li {
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border: 2px solid #2a3a5c;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #e0e0e0;
+}
+.options li:hover { border-color: #4A90D9; background: #1a2744; }
+.options li.selected { border-color: #4A90D9; background: #1a2744; }
+.options li.correct-answer { border-color: #52c41a !important; background: #1b3a1b !important; }
+.options li.wrong-answer { border-color: #f5222d !important; background: #3a1b1b !important; }
+.options li .radio {
+  width: 18px; height: 18px;
+  border: 2px solid #666;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.options li.selected .radio {
+  border-color: #4A90D9;
+}
+.options li.selected .radio::after {
+  content: '';
+  width: 10px; height: 10px;
+  background: #4A90D9;
+  border-radius: 50%;
+}
+.fill-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #2a3a5c;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+  background: #0f3460;
+  color: #e0e0e0;
+}
+.fill-input:focus { border-color: #4A90D9; }
+.fill-input.correct { border-color: #52c41a; background: #1b3a1b; }
+.fill-input.wrong { border-color: #f5222d; background: #3a1b1b; }
+.judge-btns {
+  display: flex;
+  gap: 16px;
+}
+.judge-btn {
+  flex: 1;
+  padding: 14px;
+  border: 2px solid #2a3a5c;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #0f3460;
+  color: #e0e0e0;
+  transition: all 0.2s;
+}
+.judge-btn:hover { border-color: #4A90D9; }
+.judge-btn.selected { border-color: #4A90D9; background: #1a2744; color: #64B5F6; }
+.judge-btn.correct-answer { border-color: #52c41a !important; background: #1b3a1b !important; color: #52c41a !important; }
+.judge-btn.wrong-answer { border-color: #f5222d !important; background: #3a1b1b !important; color: #f5222d !important; }
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  margin-top: 20px;
+  background: #4A90D9;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.submit-btn:hover { background: #3a7bc8; }
+.submit-btn:disabled { background: #2a3a5c; cursor: not-allowed; color: #666; }
+.next-btn {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  margin-top: 12px;
+  background: #16213e;
+  color: #64B5F6;
+  border: 2px solid #4A90D9;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.next-btn:hover { background: #1a2744; }
+.feedback {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+  animation: feedbackIn 0.3s ease;
+}
+.feedback.correct {
+  background: #1b3a1b;
+  border: 1px solid #2e7d32;
+  color: #81c784;
+}
+.feedback.wrong {
+  background: #3a1b1b;
+  border: 1px solid #c62828;
+  color: #ef9a9a;
+}
+.feedback .answer-text { font-weight: 600; }
+/* Sidebar */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 99;
+}
+.sidebar-overlay.show { display: block; }
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  height: 100vh;
+  width: 280px;
+  background: #0f1b33;
+  border-right: 1px solid #2a3a5c;
+  z-index: 100;
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar.show { left: 0; }
+.sidebar-toggle-float {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  width: 40px;
+  height: 40px;
+  background: #16213e;
+  border: 1px solid #2a3a5c;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64B5F6;
+  font-size: 20px;
+  z-index: 101;
+  transition: background 0.2s;
+}
+.sidebar-toggle-float:hover { background: #1a2744; }
+.sidebar-toggle-float.hidden-btn { display: none; }
+.sidebar-header {
+  padding: 12px 16px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64B5F6;
+  white-space: nowrap;
+  border-bottom: 1px solid #1a2744;
+  flex-shrink: 0;
+}
+.sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+.sidebar-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #bbb;
+  border-bottom: 1px solid #1a2744;
+  transition: background 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-item:hover { background: #16213e; color: #e0e0e0; }
+.sidebar-item .item-num {
+  display: inline-block;
+  min-width: 30px;
+  color: #64B5F6;
+  font-weight: 500;
+  margin-right: 6px;
+}
+.sidebar-empty {
+  padding: 20px 16px;
+  color: #666;
+  font-size: 13px;
+  text-align: center;
+}
+@media (max-width: 480px) {
+  .container { padding: 12px 10px; }
+  .card { padding: 20px 16px; }
+  .tab-btn { font-size: 13px; padding: 10px 4px; }
+  .q-text { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+<div class="sidebar-toggle-float" id="sidebarToggle" title="题号列表">&#9776;</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">未出题目</div>
+  <div class="sidebar-list" id="sidebarList"></div>
+  <div class="sidebar-empty" id="sidebarEmpty">全部题目已出过</div>
+</div>
+<div class="container">
+  <h1>📚 数据库题库刷题</h1>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('choice')">单项选择题（50题）</button>
+    <button class="tab-btn" onclick="switchTab('fill')">填空题（25题）</button>
+    <button class="tab-btn" onclick="switchTab('judge')">判断题（24题）</button>
+  </div>
+  <div class="stats-bar">
+    <span id="stats-text">已答 0 题</span>
+    <span class="correct-rate" id="rate-text">正确率 --</span>
+  </div>
+  <div class="card" id="quiz-card"></div>
+</div>
+<script>
+var quizData = {"choice": [{"num": 1, "question": "区数据库系统的核心组成部分是（ ）", "options": {"A": "数据库应用程序          B.DBMS", "B": "DBMS", "C": "操作系统                D.硬件设备", "D": "硬件设备"}, "answer": "B"}, {"num": 2, "question": "数据库技术的主要目标是实现数据的（ ）", "options": {"A": "独占", "B": "共享", "C": "加密", "D": "压缩"}, "answer": "B"}, {"num": 3, "question": "下列属于数据库管理员职责的是（ ）", "options": {"A": "编写网页", "B": "管理数据库", "C": "维修计算机", "D": "开发操作系统"}, "answer": "B"}, {"num": 4, "question": "数据库系统中负责存储数据的是（ ）", "options": {"A": "数据库", "B": "DBMS", "C": "用户", "D": "应用程序"}, "answer": "A"}, {"num": 5, "question": "在E-R图中，“订单”通常属于（ ）", "options": {"A": "属性", "B": "联系", "C": "实体", "D": "主键"}, "answer": "C"}, {"num": 6, "question": "“教师指导学生毕业设计”最可能属于（ ）", "options": {"A": "1:1", "B": "1:N", "C": "M:N", "D": "无联系"}, "answer": "B"}, {"num": 7, "question": "将现实世界抽象为信息世界时使用的模型是（ ）", "options": {"A": "关系模型", "B": "层次模型", "C": "E-R模型", "D": "网状模型"}, "answer": "C"}, {"num": 8, "question": "关系数据库中的列称为（ ）", "options": {"A": "元组", "B": "关系", "C": "属性", "D": "记录"}, "answer": "C"}, {"num": 9, "question": "关系数据库中的行称为（ ）", "options": {"A": "字段", "B": "元组", "C": "属性", "D": "关系"}, "answer": "B"}, {"num": 10, "question": "一个关系对应于一张（ ）", "options": {"A": "记录", "B": "二维表", "C": "字段", "D": "数据库"}, "answer": "B"}, {"num": 11, "question": "创建学生表应使用（ ）", "options": {"A": "SELECT", "B": "INSERT", "C": "CREATE TABLE", "D": "UPDATE"}, "answer": "C"}, {"num": 12, "question": "若删除整个表结构，应使用（ ）", "options": {"A": "DELETE", "B": "REMOVE", "C": "DROP TABLE", "D": "TRUNCATE"}, "answer": "C"}, {"num": 13, "question": "为字段设置默认值应使用（ ）", "options": {"A": "DEFAULT", "B": "VALUE", "C": "SET", "D": "AUTO"}, "answer": "A"}, {"num": 14, "question": "要求学号不能重复且不能为空，应设置（ ）", "options": {"A": "UNIQUE", "B": "NOT NULL", "C": "PRIMARY KEY", "D": "CHECK"}, "answer": "C"}, {"num": 15, "question": "一个表允许存在多个（ ）", "options": {"A": "主键", "B": "记录", "C": "数据库", "D": "主表"}, "answer": "B"}, {"num": 16, "question": "外键的主要作用是保证（ ）", "options": {"A": "数据安全", "B": "参照完整性", "C": "运行速度", "D": "数据压缩"}, "answer": "B"}, {"num": 17, "question": "若要增加表字段，应使用ALTER TABLE中的（ ）", "options": {"A": "CREATE", "B": "CHANGE", "C": "ADD", "D": "UPDATE"}, "answer": "C"}, {"num": 18, "question": "下列约束允许字段值唯一但可为空的是（ ）", "options": {"A": "PRIMARY KEY", "B": "UNIQUE", "C": "NOT NULL", "D": "DEFAULT"}, "answer": "B"}, {"num": 19, "question": "查看当前数据库中的所有表应使用（ ）", "options": {"A": "SHOW TABLES", "B": "SHOW DATABASES", "C": "LIST TABLES", "D": "SELECT TABLES"}, "answer": "A"}, {"num": 20, "question": "删除表中所有记录但保留结构可使用（ ）", "options": {"A": "DELETE", "B": "DROP", "C": "CREATE", "D": "ALTER"}, "answer": "A"}, {"num": 21, "question": "查询年龄大于20岁的学生应使用（ ）", "options": {"A": "HAVING", "B": "WHERE", "C": "ORDER BY", "D": "GROUP BY"}, "answer": "B"}, {"num": 22, "question": "按照成绩从低到高排序应使用（ ）", "options": {"A": "DESC", "B": "ASC", "C": "HAVING", "D": "IN"}, "answer": "B"}, {"num": 23, "question": "查找姓名中含\"李\"的学生应使用（ ）", "options": {"A": "IN", "B": "BETWEEN", "C": "LIKE", "D": "EXISTS"}, "answer": "C"}, {"num": 24, "question": "统计员工总人数使用（ ）", "options": {"A": "MAX", "B": "MIN", "C": "COUNT", "D": "AVG"}, "answer": "C"}, {"num": 25, "question": "计算平均工资使用（ ）", "options": {"A": "COUNT", "B": "SUM", "C": "MAX", "D": "AVG"}, "answer": "D"}, {"num": 26, "question": "统计每个班级人数使用（ ）", "options": {"A": "GROUP BY", "B": "ORDER BY", "C": "DESC", "D": "UNION"}, "answer": "A"}, {"num": 27, "question": "筛选人数超过30人的班级使用（ ）", "options": {"A": "WHERE", "B": "HAVING", "C": "ORDER BY", "D": "DISTINCT"}, "answer": "B"}, {"num": 28, "question": "去除重复专业名称使用（ ）", "options": {"A": "GROUP BY", "B": "ORDER BY", "C": "DISTINCT", "D": "UNIQUE"}, "answer": "C"}, {"num": 29, "question": "BETWEEN 60 AND 100表示（ ）", "options": {"A": "不含60和100", "B": "包含60和100", "C": "仅包含60", "D": "仅包含100"}, "answer": "B"}, {"num": 30, "question": "判断字段为空应使用（ ）", "options": {"A": "=NULL", "B": "IS NULL", "C": "NULL=", "D": "LIKE NULL"}, "answer": "B"}, {"num": 31, "question": "下列属于聚合函数的是（ ）", "options": {"A": "SELECT", "B": "LIKE", "C": "SUM", "D": "WHERE"}, "answer": "C"}, {"num": 32, "question": "IN关键字通常与（ ）配合使用", "options": {"A": "排序", "B": "子查询", "C": "更新", "D": "删除"}, "answer": "B"}, {"num": 33, "question": "EXISTS主要用于判断（ ）", "options": {"A": "是否排序", "B": "是否为空", "C": "是否存在结果", "D": "是否重复"}, "answer": "C"}, {"num": 34, "question": "查询工资高于平均工资员工最适合采用（ ）", "options": {"A": "连接查询", "B": "嵌套查询", "C": "删除操作", "D": "索引"}, "answer": "B"}, {"num": 35, "question": "查询结果按多个字段排序时使用（ ）", "options": {"A": "ORDER BY", "B": "HAVING", "C": "IN", "D": "DISTINCT"}, "answer": "A"}, {"num": 36, "question": "多表联合查询主要依赖（ ）", "options": {"A": "JOIN", "B": "HAVING", "C": "GROUP", "D": "ORDER"}, "answer": "A"}, {"num": 37, "question": "查询所有学生及其选课信息，即使未选课也显示学生，应使用（ ）", "options": {"A": "INNER JOIN", "B": "LEFT JOIN", "C": "RIGHT JOIN", "D": "CROSS JOIN"}, "answer": "B"}, {"num": 38, "question": "只返回两表匹配记录应使用（ ）", "options": {"A": "LEFT JOIN", "B": "RIGHT JOIN", "C": "INNER JOIN", "D": "FULL JOIN"}, "answer": "C"}, {"num": 39, "question": "视图最大的特点是（ ）", "options": {"A": "独立存储数据", "B": "虚拟存在", "C": "自动备份", "D": "自动加密"}, "answer": "B"}, {"num": 40, "question": "创建视图使用（ ）", "options": {"A": "CREATE VIEW", "B": "CREATE INDEX", "C": "CREATE USER", "D": "CREATE TABLE"}, "answer": "A"}, {"num": 41, "question": "索引适用于经常进行（ ）的字段", "options": {"A": "查询", "B": "删除", "C": "修改", "D": "导出"}, "answer": "A"}, {"num": 42, "question": "关于索引，下列说法最正确的是（ ）。", "options": {"A": "索引越多越好", "B": "索引会降低 INSERT 语句的执行速度", "C": "索引不能建立在多个字段上", "D": "主键约束会自动创建索引"}, "answer": "D"}, {"num": 43, "question": "触发器可以响应（ ）", "options": {"A": "INSERT", "B": "UPDATE", "C": "DELETE", "D": "以上都是"}, "answer": "D"}, {"num": 44, "question": "调用存储过程使用（ ）", "options": {"A": "RUN", "B": "CALL", "C": "SELECT", "D": "OPEN"}, "answer": "B"}, {"num": 45, "question": "存储函数通常通过（ ）调用", "options": {"A": "SELECT", "B": "OPEN", "C": "CALL", "D": "EXEC"}, "answer": "A"}, {"num": 46, "question": "事务的四个特性简称（ ）", "options": {"A": "SQL", "B": "ACID", "C": "DBMS", "D": "DDL"}, "answer": "B"}, {"num": 47, "question": "事务成功结束后应执行（ ）", "options": {"A": "COMMIT", "B": "ROLLBACK", "C": "CLOSE", "D": "OPEN"}, "answer": "A"}, {"num": 48, "question": "撤销事务操作使用（ ）", "options": {"A": "GRANT", "B": "COMMIT", "C": "ROLLBACK", "D": "REVOKE"}, "answer": "C"}, {"num": 49, "question": "隔离级别最高的是（ ）", "options": {"A": "READ COMMITTED", "B": "READ UNCOMMITTED", "C": "REPEATABLE READ", "D": "COMMITTED"}, "answer": "D"}, {"num": 50, "question": "向用户授权使用（ ）", "options": {"A": "REVOKE", "B": "GRANT", "C": "DELETE", "D": "ALTER"}, "answer": "B"}], "fill": [{"num": 1, "question": "1、两个不同实体集的实体间有_______、一对多和多对多3种联系。", "answer": "一对一"}, {"num": 2, "question": "2、数据库发展经历了人工管理阶段、________和数据库系统阶段。", "answer": "文件系统阶段"}, {"num": 3, "question": "3、数据模型通常由3部分组成，它们是        、数据操作和完整性约束。", "answer": "数据结构"}, {"num": 4, "question": "4、数据独立性分为     独立性和     独立性两级。", "answer": "逻辑数据   物理数据"}, {"num": 5, "question": "5、关系的完整性约束条件包括三大类：         、参照完整性和用户自定义的完整性。", "answer": "实体完整性"}, {"num": 6, "question": "6、在关系A（S，SN，D）和B（D，CN，NM）中，A的主键是S，B的主键是D，则D在A中称为               。", "answer": "外键"}, {"num": 7, "question": "7、使用CREATE VIEW语句产生的虚表称为________。", "answer": "视图| View"}, {"num": 8, "question": "8、在关系数据库标准语言SQL中，实现数据检索的语句命令是_______。", "answer": "SELECT"}, {"num": 9, "question": "9、数据库设计分为以下六个阶段：需求分析、__1___、___2___、物理设计、___3___和数据库运行与维护。", "answer": "概念设计、逻辑设计、数据库实施"}, {"num": 10, "question": "10、E-R模型一般在数据库设计的           阶段使用。", "answer": "概念结构设计"}, {"num": 11, "question": "11、数据库系统的逻辑设计主要是将______转化成DBMS所支持的数据模型。", "answer": "概念模型"}, {"num": 12, "question": "12、如果两个实体之间具有M：N联系，则将它们转换为关系模型的结果是_____ 个关系。", "answer": "3"}, {"num": 13, "question": "13、SELECT语句中，______子句用于选择满足给定条件的元组。", "answer": "WHERE"}, {"num": 14, "question": "14、SELECT语句中，若希望查询的结果不出现重复元组，则应在SELECT子句中使用_______保留字。", "answer": "DISTINCT"}, {"num": 15, "question": "15、SELECT语句中，WHERE子句的条件表达式中，字符串匹配的操作符是________。", "answer": "LIKE"}, {"num": 16, "question": "16、SELECT语句中，WHERE子句的条件表达式中，字符串匹配的通配符是_____和下划线（_）。", "answer": "%"}, {"num": 17, "question": "17、在MySQL中，通常使用________值来表示一个字段没有值或缺值。", "answer": "NULL"}, {"num": 18, "question": "18、在CREATE TABLE语句中，通常使用________关键字来指定主键。", "answer": "PRIMARY KEY"}, {"num": 19, "question": "19、SELECT语句中，若希望将查询结果排序，则应在SELECT语句中使用______子句，其中，ASC选项表示升序，DESC选项表示降序。", "answer": "ORDER BY"}, {"num": 20, "question": "20、SELECT语句中，若希望将查询结果排序，则应在SELECT语句中使用ORDER BY子句，其中，ASC选项表示升序，______选项表示降序。", "answer": "DESC"}, {"num": 21, "question": "21、SELECT语句中，使用_____子句可按指定列的值分组，同时使用HAVING子句可提取满足条件的组。", "answer": "GROUP BY"}, {"num": 22, "question": "22、SELECT语句中，使用GROUP BY 子句可按指定列的值分组，同时使用_______子句可提取满足条件的组。", "answer": "HAVING"}, {"num": 23, "question": "23、在超市销售系统中，希望插入数据后自动统计营业额，可通过________实现。", "answer": "触发器| Trigger"}, {"num": 24, "question": "24、MySQL中打开游标使用    关键字。", "answer": "open"}, {"num": 25, "question": "MySQL中事务的4个特性分别是      、      、隔离性、持久性。", "answer": "原子性、一致性"}], "judge": [{"num": 1, "question": "现实世界中客观存在并能相互区别的事物称为属性。", "answer": "F"}, {"num": 2, "question": "在数据库中建立的索引越多越好。", "answer": "F"}, {"num": 3, "question": "创建唯一性索引的列可以有一些重复的值。", "answer": "F"}, {"num": 4, "question": "E-R图是用来表示关系模型的图形。", "answer": "F"}, {"num": 5, "question": "一个关系中可以有两个完全相同的元组。", "answer": "F"}, {"num": 6, "question": "在MySQL中，一旦某个表创建完成，它的结构就不能再更改。", "answer": "F"}, {"num": 7, "question": "数据独立性是指应用程序和数据库的数据结构之间相互独立，不受影响。", "answer": "T"}, {"num": 8, "question": "在MySQL中，删除一个视图所用的命令是DELETE。", "answer": "F"}, {"num": 9, "question": "ORACLE是大型数据库管理系统。", "answer": "T"}, {"num": 10, "question": "数据库中存储的只是数据。", "answer": "F"}, {"num": 11, "question": "数据库中的数据可以共享。", "answer": "T"}, {"num": 12, "question": "在创建表时，不能为其某个字段指定默认值。", "answer": "F"}, {"num": 13, "question": "E-R图在需求分析阶段生成。", "answer": "F"}, {"num": 14, "question": "在MySQL表中执行删除操作时，可以删除指定的记录，也可以删除表中所有的记录。", "answer": "T"}, {"num": 15, "question": "在创建表时，指定某字段为主键的关键字是FOREIGN KEY。", "answer": "F"}, {"num": 16, "question": "在创建表时，可以设定某个字段的取值允许为空值（NULL)。", "answer": "T"}, {"num": 17, "question": "INNER JOIN只返回两个表中满足连接条件的记录。", "answer": "T"}, {"num": 18, "question": "在SQL中，DISTINCT关键字用于消除查询结果中的重复记录。", "answer": "T"}, {"num": 19, "question": "视图是一个虚拟表，其数据来源于基本表或其他视图。", "answer": "T"}, {"num": 20, "question": "DROP TABLE删除表时，其相关索引不会被删除。", "answer": "F"}, {"num": 21, "question": "READ UNCOMMITTED隔离级别可能产生脏读现象。", "answer": "T"}, {"num": 22, "question": "主键约束建立后，数据库系统通常会自动创建对应索引。", "answer": "T"}, {"num": 23, "question": "存储过程必须通过CALL语句进行调用。", "answer": "T"}, {"num": 24, "question": "REVOKE语句用于收回已经授予用户的权限。", "answer": "T"}]};
+
+var currentTab = 'choice';
+var currentIndex = -1;
+var answered = false;
+var userAnswer = null;
+var stats = { total: 0, correct: 0 };
+var typeNames = { choice: '\u5355\u9009\u9898', fill: '\u586b\u7a7a\u9898', judge: '\u5224\u65ad\u9898' };
+var typeTotal = { choice: 50, fill: 25, judge: 24 };
+var seenQuestions = { choice: {}, fill: {}, judge: {} };
+var sidebarExpanded = false;
+
+function getRandomIndex(arr, excludeIdx) {
+  if (arr.length <= 1) return 0;
+  var idx;
+  do { idx = Math.floor(Math.random() * arr.length); } while (idx === excludeIdx);
+  return idx;
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  currentIndex = -1;
+  var btns = document.querySelectorAll('.tab-btn');
+  var tabs = ['choice','fill','judge'];
+  for (var i = 0; i < btns.length; i++) {
+    if (tabs[i] === tab) btns[i].classList.add('active');
+    else btns[i].classList.remove('active');
+  }
+  renderSidebar();
+  loadQuestion();
+}
+
+function toggleSidebar() {
+  sidebarExpanded = !sidebarExpanded;
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  if (sidebarExpanded) {
+    sidebar.classList.add('show');
+    overlay.classList.add('show');
+  } else {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  }
+}
+
+function closeSidebar() {
+  sidebarExpanded = false;
+  document.getElementById('sidebar').classList.remove('show');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+function renderSidebar() {
+  var arr = quizData[currentTab];
+  var seen = seenQuestions[currentTab];
+  var list = document.getElementById('sidebarList');
+  var empty = document.getElementById('sidebarEmpty');
+  var unseen = [];
+  for (var i = 0; i < arr.length; i++) {
+    if (!seen[arr[i].num]) unseen.push(arr[i]);
+  }
+  if (unseen.length === 0) {
+    list.innerHTML = '';
+    list.style.display = 'none';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    list.style.display = 'block';
+    var html = '';
+    for (var i = 0; i < unseen.length; i++) {
+      var q = unseen[i];
+      var shortQ = q.question.replace(/<[^>]*>/g, '').substring(0, 30);
+      if (q.question.length > 30) shortQ += '...';
+      html += '<div class="sidebar-item" onclick="jumpToQuestion(' + q.num + ')">';
+      html += '<span class="item-num">' + q.num + '</span>';
+      html += '<span>' + shortQ + '</span>';
+      html += '</div>';
+    }
+    list.innerHTML = html;
+  }
+}
+
+function jumpToQuestion(num) {
+  var arr = quizData[currentTab];
+  var idx = -1;
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].num === num) { idx = i; break; }
+  }
+  if (idx === -1) return;
+  if (autoTimer) { clearTimeout(autoTimer); clearInterval(autoTimer); autoTimer = null; }
+  currentIndex = idx;
+  closeSidebar();
+  loadQuestionDirect();
+}
+
+function loadQuestionDirect() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  answered = false;
+  userAnswer = null;
+  var arr = quizData[currentTab];
+  var q = arr[currentIndex];
+  seenQuestions[currentTab][q.num] = true;
+  var card = document.getElementById('quiz-card');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'fadeIn 0.35s ease';
+
+  if (currentTab === 'choice') renderChoice(q, card);
+  else if (currentTab === 'fill') renderFill(q, card);
+  else renderJudge(q, card);
+  renderSidebar();
+}
+
+function loadQuestion() {
+  if (autoTimer) { clearTimeout(autoTimer); clearInterval(autoTimer); autoTimer = null; }
+  answered = false;
+  userAnswer = null;
+  var arr = quizData[currentTab];
+  currentIndex = getRandomIndex(arr, currentIndex);
+  var q = arr[currentIndex];
+  seenQuestions[currentTab][q.num] = true;
+  var card = document.getElementById('quiz-card');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'fadeIn 0.35s ease';
+
+  if (currentTab === 'choice') renderChoice(q, card);
+  else if (currentTab === 'fill') renderFill(q, card);
+  else renderJudge(q, card);
+  renderSidebar();
+}
+
+function renderChoice(q, card) {
+  var keys = ['A','B','C','D'];
+  var optsHtml = '';
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var text = q.options[k] || '';
+    optsHtml += '<li data-key="' + k + '" onclick="selectOption(this,\'' + k + '\')"><span class="radio"></span><span>' + k + '. ' + text + '</span></li>';
+  }
+  card.innerHTML =
+    '<div class="q-header"><span class="q-num">\u7b2c ' + q.num + ' / ' + typeTotal.choice + ' \u9898</span><span class="q-type">' + typeNames.choice + '</span></div>' +
+    '<div class="q-text">' + q.question + '</div>' +
+    '<ul class="options" id="opts">' + optsHtml + '</ul>' +
+    '<button class="submit-btn" id="submitBtn" onclick="submitChoice()" disabled>\u63d0\u4ea4\u7b54\u6848</button>' +
+    '<button class="next-btn" onclick="loadQuestion()">\u4e0b\u4e00\u9898 \u2192</button>' +
+    '<div id="feedback"></div>';
+}
+
+function selectOption(el, key) {
+  if (answered) return;
+  userAnswer = key;
+  var items = document.querySelectorAll('#opts li');
+  for (var i = 0; i < items.length; i++) items[i].classList.remove('selected');
+  el.classList.add('selected');
+  document.getElementById('submitBtn').disabled = false;
+}
+
+function submitChoice() {
+  if (answered || !userAnswer) return;
+  answered = true;
+  var q = quizData[currentTab][currentIndex];
+  var isCorrect = userAnswer === q.answer;
+  stats.total++;
+  if (isCorrect) stats.correct++;
+  updateStats();
+
+  var items = document.querySelectorAll('#opts li');
+  for (var i = 0; i < items.length; i++) {
+    var k = items[i].getAttribute('data-key');
+    if (k === q.answer) items[i].classList.add('correct-answer');
+    else if (k === userAnswer && !isCorrect) items[i].classList.add('wrong-answer');
+  }
+  document.getElementById('submitBtn').disabled = true;
+  showFeedback(isCorrect, q.answer, typeNames.choice);
+}
+
+function renderFill(q, card) {
+  card.innerHTML =
+    '<div class="q-header"><span class="q-num">\u7b2c ' + q.num + ' / ' + typeTotal.fill + ' \u9898</span><span class="q-type">' + typeNames.fill + '</span></div>' +
+    '<div class="q-text">' + q.question + '</div>' +
+    '<input class="fill-input" id="fillInput" placeholder="\u8bf7\u8f93\u5165\u7b54\u6848..." onkeydown="if(event.key===\'Enter\')submitFill()">' +
+    '<button class="submit-btn" id="submitBtn" onclick="submitFill()">\u63d0\u4ea4\u7b54\u6848</button>' +
+    '<button class="next-btn" onclick="loadQuestion()">\u4e0b\u4e00\u9898 \u2192</button>' +
+    '<div id="feedback"></div>';
+  setTimeout(function() { document.getElementById('fillInput').focus(); }, 100);
+}
+
+function normalizeStr(s) {
+  return s.toLowerCase().replace(/[\s\u3000]+/g, ' ').replace(/\uff0c/g, '\u3001').replace(/,/g, '\u3001').trim();
+}
+
+function submitFill() {
+  if (answered) return;
+  var input = document.getElementById('fillInput');
+  var val = input.value.trim();
+  if (!val) return;
+  answered = true;
+  var q = quizData[currentTab][currentIndex];
+
+  var acceptableAnswers = q.answer.split('|');
+  var userNorm = normalizeStr(val);
+  var isCorrect = false;
+
+  for (var i = 0; i < acceptableAnswers.length; i++) {
+    var ansNorm = normalizeStr(acceptableAnswers[i]);
+    if (userNorm === ansNorm) { isCorrect = true; break; }
+    var parts = ansNorm.split(/[\u3001]\s*/);
+    if (parts.length > 1) {
+      var allFound = true;
+      for (var j = 0; j < parts.length; j++) {
+        if (userNorm.indexOf(parts[j].trim()) === -1) { allFound = false; break; }
+      }
+      if (allFound) { isCorrect = true; break; }
+    }
+  }
+
+  stats.total++;
+  if (isCorrect) stats.correct++;
+  updateStats();
+
+  input.classList.add(isCorrect ? 'correct' : 'wrong');
+  input.readOnly = true;
+  document.getElementById('submitBtn').disabled = true;
+  showFeedback(isCorrect, q.answer, typeNames.fill);
+}
+
+function renderJudge(q, card) {
+  card.innerHTML =
+    '<div class="q-header"><span class="q-num">\u7b2c ' + q.num + ' / ' + typeTotal.judge + ' \u9898</span><span class="q-type">' + typeNames.judge + '</span></div>' +
+    '<div class="q-text">' + q.question + '</div>' +
+    '<div class="judge-btns" id="judgeBtns">' +
+      '<button class="judge-btn" onclick="selectJudge(this,\'T\')">\u2713 \u5bf9</button>' +
+      '<button class="judge-btn" onclick="selectJudge(this,\'F\')">\u2717 \u9519</button>' +
+    '</div>' +
+    '<button class="next-btn" onclick="loadQuestion()">\u4e0b\u4e00\u9898 \u2192</button>' +
+    '<div id="feedback"></div>';
+}
+
+function selectJudge(el, val) {
+  if (answered) return;
+  answered = true;
+  userAnswer = val;
+  var q = quizData[currentTab][currentIndex];
+  var isCorrect = val === q.answer;
+  stats.total++;
+  if (isCorrect) stats.correct++;
+  updateStats();
+
+  var btns = document.querySelectorAll('#judgeBtns .judge-btn');
+  for (var i = 0; i < btns.length; i++) {
+    var bv = btns[i].textContent.indexOf('\u5bf9') !== -1 ? 'T' : 'F';
+    if (bv === q.answer) btns[i].classList.add('correct-answer');
+    else if (bv === val && !isCorrect) btns[i].classList.add('wrong-answer');
+  }
+  showFeedback(isCorrect, q.answer === 'T' ? '\u5bf9' : '\u9519', typeNames.judge);
+}
+
+var autoTimer = null;
+function showFeedback(isCorrect, correctAns, typeName) {
+  var fb = document.getElementById('feedback');
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  if (isCorrect) {
+    fb.innerHTML = '<div class="feedback correct" id="feedbackMsg">\u2705 \u56de\u7b54\u6b63\u786e\uff01<span id="countdown"> 2</span> \u79d2\u540e\u81ea\u52a8\u8fdb\u5165\u4e0b\u4e00\u9898...</div>';
+    var sec = 2;
+    var cdEl = document.getElementById('countdown');
+    var cdTimer = setInterval(function() {
+      sec--;
+      if (cdEl) cdEl.textContent = ' ' + sec;
+      if (sec <= 0) clearInterval(cdTimer);
+    }, 1000);
+    autoTimer = setTimeout(function() {
+      clearInterval(cdTimer);
+      loadQuestion();
+    }, 2000);
+  } else {
+    fb.innerHTML = '<div class="feedback wrong">\u274c \u56de\u7b54\u9519\u8bef\uff01<br><span class="answer-text">\u6b63\u786e\u7b54\u6848\uff1a' + correctAns + '</span></div>';
+  }
+}
+
+function updateStats() {
+  document.getElementById('stats-text').textContent = '\u5df2\u7b54 ' + stats.total + ' \u9898';
+  if (stats.total > 0) {
+    var rate = (stats.correct / stats.total * 100).toFixed(1);
+    document.getElementById('rate-text').textContent = '\u6b63\u786e\u7387 ' + rate + '%';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
+  document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+  renderSidebar();
+  loadQuestion();
+});
+</script>
+</body>
+</html>
